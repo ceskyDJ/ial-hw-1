@@ -73,8 +73,13 @@ void Stack_Error( int error_code ) {
  * @param stack Ukazatel na strukturu zásobníku
  */
 void Stack_Init( Stack *stack ) {
+    // Bad input check
+    if (stack == NULL) {
+        Stack_Error(SERR_INIT);
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    stack->topIndex = -1;
 }
 
 /**
@@ -87,8 +92,7 @@ void Stack_Init( Stack *stack ) {
  * @returns Nenulovou hodnotu v případě, že je zásobník prázdný, jinak nulu
  */
 int Stack_IsEmpty( const Stack *stack ) {
-
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    return (stack->topIndex == -1);
 }
 
 /**
@@ -104,8 +108,7 @@ int Stack_IsEmpty( const Stack *stack ) {
  * @returns Nenulovou hodnotu v případě, že je zásobník plný, jinak nulu
  */
 int Stack_IsFull( const Stack *stack ) {
-
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    return stack->topIndex >= STACK_SIZE - 1;
 }
 
 /**
@@ -121,8 +124,13 @@ int Stack_IsFull( const Stack *stack ) {
  * @param dataPtr Ukazatel na cílovou proměnnou
  */
 void Stack_Top( const Stack *stack, char *dataPtr ) {
+    // Check for using empty stack
+    if (Stack_IsEmpty(stack)) {
+        Stack_Error(SERR_TOP);
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    *dataPtr = stack->array[stack->topIndex];
 }
 
 
@@ -139,8 +147,12 @@ void Stack_Top( const Stack *stack, char *dataPtr ) {
  * @param stack Ukazatel na inicializovanou strukturu zásobníku
  */
 void Stack_Pop( Stack *stack ) {
+    // Stack is already empty, there is nothing to do...
+    if (Stack_IsEmpty(stack)) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    stack->topIndex--;
 }
 
 
@@ -155,8 +167,14 @@ void Stack_Pop( Stack *stack ) {
  * @param data Znak k vložení
  */
 void Stack_Push( Stack *stack, char data ) {
+    // Check for full stack
+    if (Stack_IsFull(stack)) {
+        Stack_Error(SERR_PUSH);
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    stack->topIndex++;
+    stack->array[stack->topIndex] = data;
 }
 
 /* Konec c202.c */
