@@ -15,4 +15,4 @@ add_executable(c206 src/c206/c206.c src/c206/c206-test.c)
 
 add_executable(c202-advanced test/c202/c202.c test/c202/c202-advanced-test.c)
 add_executable(c204-advanced test/c204/c204.c src/c202/c202.c test/c204/c204-advanced-test.c)
-#add_executable(c206-advanced test/c206/c206-advanced-test.c)
+add_executable(c206-advanced test/c206/c206.c test/c206/c206-advanced-test.c)

@@ -79,8 +79,9 @@ void DLL_Error() {
  * @param list Ukazatel na strukturu dvousměrně vázaného seznamu
  */
 void DLL_Init( DLList *list ) {
-
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    list->activeElement = NULL;
+    list->firstElement = NULL;
+    list->lastElement = NULL;
 }
 
 /**
@@ -91,8 +92,17 @@ void DLL_Init( DLList *list ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_Dispose( DLList *list ) {
+    DLLElementPtr nextElement = NULL;
+    for (DLLElementPtr element = list->firstElement; element != NULL; element = nextElement) {
+        // Backup next element
+        nextElement = element->nextElement;
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+        free(element);
+    }
+
+    list->activeElement = NULL;
+    list->firstElement = NULL;
+    list->lastElement = NULL;
 }
 
 /**
@@ -104,8 +114,29 @@ void DLL_Dispose( DLList *list ) {
  * @param data Hodnota k vložení na začátek seznamu
  */
 void DLL_InsertFirst( DLList *list, int data ) {
+    // Try to allocate memory for new element
+    DLLElementPtr newElement;
+    if ((newElement = malloc(sizeof(struct DLLElement))) == NULL) {
+        DLL_Error();
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    // Set up new element
+    newElement->data = data;
+    newElement->nextElement = list->firstElement;
+    newElement->previousElement = NULL;
+
+    // Set up next element (current first)
+    if (list->firstElement != NULL) {
+        list->firstElement->previousElement = newElement;
+    }
+
+    // Update list
+    list->firstElement = newElement;
+    if (list->lastElement == NULL) {
+        // Adding element into empty list means the new element is first but last, too
+        list->lastElement = newElement;
+    }
 }
 
 /**
@@ -117,8 +148,29 @@ void DLL_InsertFirst( DLList *list, int data ) {
  * @param data Hodnota k vložení na konec seznamu
  */
 void DLL_InsertLast( DLList *list, int data ) {
+    // Try to allocate memory for new element
+    DLLElementPtr newElement;
+    if ((newElement = malloc(sizeof(struct DLLElement))) == NULL) {
+        DLL_Error();
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    // Set up new element
+    newElement->data = data;
+    newElement->nextElement = NULL;
+    newElement->previousElement = list->lastElement;
+
+    // Set up previous element (current last)
+    if (list->lastElement != NULL) {
+        list->lastElement->nextElement = newElement;
+    }
+
+    // Update list
+    list->lastElement = newElement;
+    if (list->firstElement == NULL) {
+        // Adding element into empty list means the element is last but first, too
+        list->firstElement = newElement;
+    }
 }
 
 /**
@@ -129,8 +181,7 @@ void DLL_InsertLast( DLList *list, int data ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_First( DLList *list ) {
-
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    list->activeElement = list->firstElement;
 }
 
 /**
@@ -141,8 +192,7 @@ void DLL_First( DLList *list ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_Last( DLList *list ) {
-
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    list->activeElement = list->lastElement;
 }
 
 /**
@@ -153,8 +203,13 @@ void DLL_Last( DLList *list ) {
  * @param dataPtr Ukazatel na cílovou proměnnou
  */
 void DLL_GetFirst( DLList *list, int *dataPtr ) {
+    // Check for the list is empty
+    if (list->firstElement == NULL) {
+        DLL_Error();
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    *dataPtr = list->firstElement->data;
 }
 
 /**
@@ -165,8 +220,13 @@ void DLL_GetFirst( DLList *list, int *dataPtr ) {
  * @param dataPtr Ukazatel na cílovou proměnnou
  */
 void DLL_GetLast( DLList *list, int *dataPtr ) {
+    // Check for the list is empty
+    if (list->firstElement == NULL) {
+        DLL_Error();
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    *dataPtr = list->lastElement->data;
 }
 
 /**
@@ -177,8 +237,32 @@ void DLL_GetLast( DLList *list, int *dataPtr ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_DeleteFirst( DLList *list ) {
+    // There is no job for this function when the list is empty
+    if (list->firstElement == NULL) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    // Cancel activity when the first element is active
+    if (list->activeElement == list->firstElement) {
+        list->activeElement = NULL;
+    }
+
+    // Update next element (current second one)
+    DLLElementPtr nextElement = list->firstElement->nextElement;
+    if (nextElement != NULL) {
+        nextElement->previousElement = NULL;
+    }
+
+    // Delete element
+    free(list->firstElement);
+
+    // Update list
+    list->firstElement = nextElement;
+    if (list->firstElement == NULL) {
+        // List is empty now, so it must be one-element before, which means the last element was the first
+        // element, too. So after deletion the last element doesn't exist (it has been deleted)
+        list->lastElement = NULL;
+    }
 }
 
 /**
@@ -189,8 +273,32 @@ void DLL_DeleteFirst( DLList *list ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_DeleteLast( DLList *list ) {
+    // There is no job for this function when the list is empty
+    if (list->firstElement == NULL) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    // Cancel activity when the last element is active
+    if (list->activeElement == list->lastElement) {
+        list->activeElement = NULL;
+    }
+
+    // Update previous element (current penultimate one)
+    DLLElementPtr previousElement = list->lastElement->previousElement;
+    if (previousElement != NULL) {
+        previousElement->nextElement = NULL;
+    }
+
+    // Delete element
+    free(list->lastElement);
+
+    // Update list
+    list->lastElement = previousElement;
+    if (list->lastElement == NULL) {
+        // List is empty now, so it must be one-element before, which means the first element was the last
+        // element, too. So after deletion the first element doesn't exist (it has been deleted)
+        list->firstElement = NULL;
+    }
 }
 
 /**
@@ -201,8 +309,29 @@ void DLL_DeleteLast( DLList *list ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_DeleteAfter( DLList *list ) {
+    // There is nothing to do if no element is active, or it's the last one
+    if (list->activeElement == NULL || list->activeElement == list->lastElement) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    // Get element
+    DLLElementPtr elementForDeletion = list->activeElement->nextElement;
+
+    // Update previous element
+    elementForDeletion->previousElement->nextElement = elementForDeletion->nextElement;
+
+    // Update next element (it could be the last one)
+    if (elementForDeletion->nextElement != NULL) {
+        elementForDeletion->nextElement->previousElement = elementForDeletion->previousElement;
+    }
+
+    // Update list (when deleting the last element)
+    if (elementForDeletion == list->lastElement) {
+        list->lastElement = elementForDeletion->previousElement;
+    }
+
+    // Delete element
+    free(elementForDeletion);
 }
 
 /**
@@ -213,8 +342,29 @@ void DLL_DeleteAfter( DLList *list ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_DeleteBefore( DLList *list ) {
+    // There is nothing to do if no element is active, or it's the first one
+    if (list->activeElement == NULL || list->activeElement == list->firstElement) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    // Get element
+    DLLElementPtr elementForDeletion = list->activeElement->previousElement;
+
+    // Update previous element (it could be the first one)
+    if (elementForDeletion->previousElement != NULL) {
+        elementForDeletion->previousElement->nextElement = elementForDeletion->nextElement;
+    }
+
+    // Update next element
+    elementForDeletion->nextElement->previousElement = elementForDeletion->previousElement;
+
+    // Update list (when deleting the first element)
+    if (elementForDeletion == list->firstElement) {
+        list->firstElement = elementForDeletion->nextElement;
+    }
+
+    // Delete element
+    free(elementForDeletion);
 }
 
 /**
@@ -227,8 +377,36 @@ void DLL_DeleteBefore( DLList *list ) {
  * @param data Hodnota k vložení do seznamu za právě aktivní prvek
  */
 void DLL_InsertAfter( DLList *list, int data ) {
+    // There is nothing to do if no element is active
+    if (list->activeElement == NULL) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    // Try to allocate memory for new element
+    DLLElementPtr newElement;
+    if ((newElement = malloc(sizeof(struct DLLElement))) == NULL) {
+        DLL_Error();
+        return;
+    }
+
+    // Set up new element
+    newElement->data = data;
+    newElement->nextElement = list->activeElement->nextElement;
+    newElement->previousElement = list->activeElement;
+
+    // Set up previous element
+    newElement->previousElement->nextElement = newElement;
+
+    // Set up next element
+    // It doesn't exist when the active element is the last one
+    if (newElement->nextElement != NULL) {
+        newElement->nextElement->previousElement = newElement;
+    }
+
+    // Update list (if we are adding at the end of it)
+    if (list->activeElement == list->lastElement) {
+        list->lastElement = newElement;
+    }
 }
 
 /**
@@ -241,8 +419,35 @@ void DLL_InsertAfter( DLList *list, int data ) {
  * @param data Hodnota k vložení do seznamu před právě aktivní prvek
  */
 void DLL_InsertBefore( DLList *list, int data ) {
+    // There is nothing to do if no element is active
+    if (list->activeElement == NULL) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    // Try to allocate memory for new element
+    DLLElementPtr newElement;
+    if ((newElement = malloc(sizeof(struct DLLElement))) == NULL) {
+        DLL_Error();
+        return;
+    }
+
+    // Set up new element
+    newElement->data = data;
+    newElement->nextElement = list->activeElement;
+    newElement->previousElement = list->activeElement->previousElement;
+
+    // Set up previous element
+    if (newElement->previousElement != NULL) {
+        newElement->previousElement->nextElement = newElement;
+    }
+
+    // Set up next element
+    newElement->nextElement->previousElement = newElement;
+
+    // Update list (if we are adding at the beginning of it)
+    if (list->firstElement == list->activeElement) {
+        list->firstElement = newElement;
+    }
 }
 
 /**
@@ -253,8 +458,13 @@ void DLL_InsertBefore( DLList *list, int data ) {
  * @param dataPtr Ukazatel na cílovou proměnnou
  */
 void DLL_GetValue( DLList *list, int *dataPtr ) {
+    // Check for list isn't active
+    if (list->activeElement == NULL) {
+        DLL_Error();
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    *dataPtr = list->activeElement->data;
 }
 
 /**
@@ -265,8 +475,12 @@ void DLL_GetValue( DLList *list, int *dataPtr ) {
  * @param data Nová hodnota právě aktivního prvku
  */
 void DLL_SetValue( DLList *list, int data ) {
+    // There is nothing to do, because no element is active
+    if (list->activeElement == NULL) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    list->activeElement->data = data;
 }
 
 /**
@@ -277,8 +491,12 @@ void DLL_SetValue( DLList *list, int data ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_Next( DLList *list ) {
+    // There is nothing to do, because no element is active
+    if (list->activeElement == NULL) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    list->activeElement = list->activeElement->nextElement;
 }
 
 
@@ -290,8 +508,12 @@ void DLL_Next( DLList *list ) {
  * @param list Ukazatel na inicializovanou strukturu dvousměrně vázaného seznamu
  */
 void DLL_Previous( DLList *list ) {
+    // There is nothing to do, because no element is active
+    if (list->activeElement == NULL) {
+        return;
+    }
 
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    list->activeElement = list->activeElement->previousElement;
 }
 
 /**
@@ -303,8 +525,7 @@ void DLL_Previous( DLList *list ) {
  * @returns Nenulovou hodnotu v případě aktivity prvku seznamu, jinak nulu
  */
 int DLL_IsActive( DLList *list ) {
-
-    solved = FALSE; /* V případě řešení, smažte tento řádek! */
+    return list->activeElement != NULL;
 }
 
 /* Konec c206.c */
