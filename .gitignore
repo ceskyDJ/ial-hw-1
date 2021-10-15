@@ -3,3 +3,9 @@
 
 # CMake build and debug files
 cmake-build-debug/
+
+# Help files for testing
+c202-test
+c204-test
+c206-test
+current-test.output

@@ -32,7 +32,13 @@
 **
 **/
 
+#include <ctype.h>
 #include "c204.h"
+
+// Checks if the checked operator has lower priority than reference operator
+#define hasLowerPriority(checked, ref) ((checked == '+' || checked == '-') && (ref == '*' || ref == '/'))
+// Appends char to string indexed throw offset pointer
+#define appendChar(string, offset, c) do { string[*offset] = c; (*offset)++; } while(0)
 
 int solved;
 
@@ -55,7 +61,25 @@ int solved;
  * @param postfixExpressionLength Ukazatel na aktuální délku výsledného postfixového výrazu
  */
 void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpressionLength ) {
+    // Stack is already empty --> there is no job for this function
+    if (Stack_IsEmpty(stack)) {
+        return;
+    }
 
+    char c;
+    do {
+        // Load current char (operator or bracket)
+        Stack_Top(stack, &c);
+
+        // Save the **operator** to the postfix expression string (and increment the length)
+        if (c != '(') {
+            postfixExpression[*postfixExpressionLength] = c;
+            (*postfixExpressionLength)++;
+        }
+
+        // The '(' char should be removed, too, so we can remove at every iteration
+        Stack_Pop(stack);
+    } while (!Stack_IsEmpty(stack) && c != '(');
 }
 
 /**
@@ -75,7 +99,41 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
  * @param postfixExpressionLength Ukazatel na aktuální délku výsledného postfixového výrazu
  */
 void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postfixExpressionLength ) {
+    if (isalnum(c)) {
+        // Operand (alphabetic char --> variable or numeric value)
+        // Append to output and increment its length
+        appendChar(postfixExpression, postfixExpressionLength, c);
+    } else if (c == '(') {
+        // Left bracket
+        Stack_Push(stack, c);
+    } else if (c == '+' || c == '-' || c == '*' || c == '/') {
+        // Operator
+        // Empty stack --> just push the char to it
+        if (Stack_IsEmpty(stack)) {
+            Stack_Push(stack, c);
+            return;
+        }
 
+        // Non-empty stack --> needs to work with value on top
+        char stackTop;
+        Stack_Top(stack, &stackTop);
+
+        if (stackTop == '(' || hasLowerPriority(stackTop, c)) {
+            Stack_Push(stack, c);
+        } else {
+            Stack_Pop(stack);
+            appendChar(postfixExpression, postfixExpressionLength, stackTop);
+
+            // Try again until operator is pushed (if is true)
+            doOperation(stack, c, postfixExpression, postfixExpressionLength);
+        }
+    } else if (c == ')') {
+        untilLeftPar(stack, postfixExpression, postfixExpressionLength);
+    } else if (c == '=') {
+        untilLeftPar(stack, postfixExpression, postfixExpressionLength);
+
+        appendChar(postfixExpression, postfixExpressionLength, c);
+    }
 }
 
 /**
@@ -127,9 +185,29 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
  * @returns Znakový řetězec obsahující výsledný postfixový výraz
  */
 char *infix2postfix( const char *infixExpression ) {
+    // Allocate memory for postfix expression (function's output)
+    char *postfixExpression;
+    unsigned outputLength = 0;
+    if ((postfixExpression = malloc(MAX_LEN)) == NULL) {
+        return NULL;
+    }
 
-    solved = FALSE; /* V případě řešení smažte tento řádek! */
-    return NULL; /* V případě řešení můžete smazat tento řádek. */
+    // Prepare help stack
+    Stack help_stack;
+    Stack_Init(&help_stack);
+
+    // Infix --> postfix conversion
+    char c;
+    while ((c = *infixExpression) != '\0') {
+        doOperation(&help_stack, c, postfixExpression, &outputLength);
+
+        infixExpression++;
+    }
+
+    // String must end with '\0'
+    postfixExpression[outputLength] = '\0';
+
+    return postfixExpression;
 }
 
 /* Konec c204.c */
