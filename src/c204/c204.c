@@ -32,7 +32,6 @@
 **
 **/
 
-#include <ctype.h>
 #include "c204.h"
 
 // Checks if the checked operator has lower priority than reference operator
@@ -99,7 +98,7 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
  * @param postfixExpressionLength Ukazatel na aktuální délku výsledného postfixového výrazu
  */
 void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postfixExpressionLength ) {
-    if (isalnum(c)) {
+    if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
         // Operand (alphabetic char --> variable or numeric value)
         // Append to output and increment its length
         appendChar(postfixExpression, postfixExpressionLength, c);
