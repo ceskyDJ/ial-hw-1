@@ -38,11 +38,11 @@
 /**
  * Checks if the checked operator has lower priority than reference operator
  */
-#define hasLowerPriority(checked, ref) ((checked == '+' || checked == '-') && (ref == '*' || ref == '/'))
+#define HAS_LOWER_PRIORITY(checked, ref) ((checked == '+' || checked == '-') && (ref == '*' || ref == '/'))
 /**
  * Appends char to string indexed throw offset pointer
  */
-#define appendChar(string, offset, c) do { string[*offset] = c; (*offset)++; } while(0)
+#define APPEND_CHAR(string, offset, c) do { string[*offset] = c; (*offset)++; } while(0)
 
 int solved;
 
@@ -77,7 +77,7 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
 
         // Save the **operator** to the postfix expression string (and increment the length)
         if (c != '(') {
-            appendChar(postfixExpression, postfixExpressionLength, c);
+            APPEND_CHAR(postfixExpression, postfixExpressionLength, c);
         }
 
         // The '(' char should be removed, too, so we can remove at every iteration
@@ -105,7 +105,7 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
     if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')) {
         // Operand (alphabetic char --> variable or numeric value)
         // Append to output and increment its length
-        appendChar(postfixExpression, postfixExpressionLength, c);
+        APPEND_CHAR(postfixExpression, postfixExpressionLength, c);
     } else if (c == '(') {
         // Left bracket
         Stack_Push(stack, c);
@@ -121,11 +121,11 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
         char stackTop;
         Stack_Top(stack, &stackTop);
 
-        if (stackTop == '(' || hasLowerPriority(stackTop, c)) {
+        if (stackTop == '(' || HAS_LOWER_PRIORITY(stackTop, c)) {
             Stack_Push(stack, c);
         } else {
             Stack_Pop(stack);
-            appendChar(postfixExpression, postfixExpressionLength, stackTop);
+            APPEND_CHAR(postfixExpression, postfixExpressionLength, stackTop);
 
             // Try again until operator is pushed (if is true)
             doOperation(stack, c, postfixExpression, postfixExpressionLength);
@@ -135,7 +135,7 @@ void doOperation( Stack *stack, char c, char *postfixExpression, unsigned *postf
     } else if (c == '=') {
         untilLeftPar(stack, postfixExpression, postfixExpressionLength);
 
-        appendChar(postfixExpression, postfixExpressionLength, c);
+        APPEND_CHAR(postfixExpression, postfixExpressionLength, c);
     }
 }
 
