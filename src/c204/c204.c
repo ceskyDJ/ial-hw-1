@@ -77,8 +77,7 @@ void untilLeftPar( Stack *stack, char *postfixExpression, unsigned *postfixExpre
 
         // Save the **operator** to the postfix expression string (and increment the length)
         if (c != '(') {
-            postfixExpression[*postfixExpressionLength] = c;
-            (*postfixExpressionLength)++;
+            appendChar(postfixExpression, postfixExpressionLength, c);
         }
 
         // The '(' char should be removed, too, so we can remove at every iteration
