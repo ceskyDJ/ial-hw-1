@@ -34,9 +34,14 @@
 
 #include "c204.h"
 
-// Checks if the checked operator has lower priority than reference operator
+// Macros are there because they can't be in header file (forbidden by assignment...)
+/**
+ * Checks if the checked operator has lower priority than reference operator
+ */
 #define hasLowerPriority(checked, ref) ((checked == '+' || checked == '-') && (ref == '*' || ref == '/'))
-// Appends char to string indexed throw offset pointer
+/**
+ * Appends char to string indexed throw offset pointer
+ */
 #define appendChar(string, offset, c) do { string[*offset] = c; (*offset)++; } while(0)
 
 int solved;
